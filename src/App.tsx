@@ -38,23 +38,26 @@ export default function SpawnEngineOS() {
   const [modalOpen, setModalOpen] = useState(null); // 'pack-reveal', 'create-listing', etc.
   const [packRevealItem, setPackRevealItem] = useState(null);
 
-  // --- FIREBASE INIT ---
-  useEffect(() => {
-    if (!firebaseConfig) return;
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const firestore = getFirestore(app);
-    setDb(firestore);
+// --- FIREBASE INIT ---
+useEffect(() => {
+  if (!auth || !db) return;
 
-    const unsubAuth = onAuthStateChanged(auth, (u) => {
-      if (u) {
-        setUser(u);
-        setWallet(prev => ({ ...prev, address: u.uid.substring(0, 6) + '...' + u.uid.substring(u.uid.length - 4) }));
-      } else {
-        signInAnonymously(auth);
-      }
-    });
+  const unsubAuth = onAuthStateChanged(auth, (u) => {
+    if (u) {
+      setUser(u);
+      setWallet(prev => ({
+        ...prev,
+        address: u.uid.substring(0, 6) + '...' + u.uid.substring(u.uid.length - 4)
+      }));
+    } else {
+      signInAnonymously(auth);
+    }
+  });
 
+  return () => {
+    unsubAuth();
+  };
+}, []);
     // Unified Activity Mesh Listener
     const q = query(collection(firestore, `artifacts/${appId}/public/mesh_events`), orderBy('ts', 'desc'), limit(30));
     const unsubFeed = onSnapshot(q, (snap) => {
