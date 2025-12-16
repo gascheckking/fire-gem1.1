@@ -67,36 +67,43 @@ export default function SpawnEngineOS() {
 const [runtimeErr, setRuntimeErr] = useState<string | null>(null);
 
   useEffect(() => {
-  const unsubAuth = onAuthStateChanged(auth, (u) => {
-    if (u) {
-      setWallet((prev) => ({
-        ...prev,
-        address: u.uid.substring(0, 6) + "..." + u.uid.substring(u.uid.length - 4),
-      }));
-    } else {
-      signInAnonymously(auth);
-    }
-  });
+  let unsubAuth: (() => void) | undefined;
+  let unsubFeed: (() => void) | undefined;
 
-  const q = query(
-    collection(db, `artifacts/${appId}/public/mesh_events`),
-    orderBy("ts", "desc"),
-    limit(30)
-  );
+  try {
+    unsubAuth = onAuthStateChanged(auth, (u) => {
+      if (u) {
+        setWallet((prev) => ({
+          ...prev,
+          address:
+            u.uid.substring(0, 6) +
+            "..." +
+            u.uid.substring(u.uid.length - 4),
+        }));
+      } else {
+        signInAnonymously(auth);
+      }
+    });
 
-  const unsubFeed = onSnapshot(
-    q,
-    (snap) => {
-      setFeed(snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })));
-    },
-    (err) => {
-      setRuntimeErr(String(err?.message || err));
-    }
-  );
+    const q = query(
+      collection(db, `artifacts/${appId}/public/mesh_events`),
+      orderBy("ts", "desc"),
+      limit(30)
+    );
+
+    unsubFeed = onSnapshot(
+      q,
+      (snap) =>
+        setFeed(snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }))),
+      (err) => setRuntimeErr(String(err?.message || err))
+    );
+  } catch (err: any) {
+    setRuntimeErr(String(err?.message || err));
+  }
 
   return () => {
-    unsubAuth();
-    unsubFeed();
+    unsubAuth?.();
+    unsubFeed?.();
   };
 }, []);
 
