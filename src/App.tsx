@@ -1,3 +1,5 @@
+import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';
+import { collection, addDoc, query, orderBy, limit, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { auth, db, APP_ID } from './firebase';
 import {
