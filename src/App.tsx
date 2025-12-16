@@ -113,7 +113,7 @@ const [runtimeErr, setRuntimeErr] = useState<string | null>(null);
       ...prev,
     ]);
 
-    await addDoc(collection(db, `artifacts/${appId}/public/mesh_events`), evt);
+await addDoc(collection(db, `artifacts/${appId}/mesh_events`), evt);
   } catch (err: any) {
     setRuntimeErr(String(err?.message || err));
   }
