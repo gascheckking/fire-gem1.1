@@ -15,27 +15,18 @@ import {
   Home,
   ShoppingBag,
   Gift,
-  Layers,
   MessageSquare,
   Settings,
-  Zap,
   Activity,
-  Users,
   Shield,
-  Cpu,
   Terminal,
-  ChevronRight,
-  Play,
   Box,
   Globe,
-  Wallet,
-  Bell,
   Search,
   Trophy,
   Flame,
-  Sparkles,
   Bot,
-  Diamond
+  Diamond,
 } from 'lucide-react';
 const appId = APP_ID;
 
