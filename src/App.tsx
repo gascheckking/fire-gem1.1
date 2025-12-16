@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
 import { auth, db, APP_ID } from './firebase';
+import { useState, useEffect } from 'react';
 import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 import {
   collection,
