@@ -1,7 +1,9 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+// src/firebase.ts
+import { initializeApp, getApps } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
+// Din Firebase web-config (från bilden du skickade)
 const firebaseConfig = {
   apiKey: "AIzaSyDoErpJzQnkaEtt8Gxy59emPlJBFft5O08",
   authDomain: "firegem-b6f22.firebaseapp.com",
@@ -9,11 +11,15 @@ const firebaseConfig = {
   storageBucket: "firegem-b6f22.firebasestorage.app",
   messagingSenderId: "461582898924",
   appId: "1:461582898924:web:166ec1e5aec048d17db7c9",
+  measurementId: "G-EGG1QKQ5JD",
 };
 
-export const app = initializeApp(firebaseConfig);
+// Viktigt: init bara en gång
+export const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+
+// Exportera exakt det App.tsx importerar
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-// används i App.tsx
-export const APP_ID = firebaseConfig.projectId;
+// Valfri “namespace” för dina collections
+export const APP_ID = "firegem-b6f22";
