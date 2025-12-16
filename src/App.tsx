@@ -86,10 +86,15 @@ const [runtimeErr, setRuntimeErr] = useState<string | null>(null);
       limit(30)
     );
 
-    const unsubFeed = onSnapshot(q, (snap) => {
-      const rows = snap.docs.map((d) => ({ id: d.id, ...(d.data() as DocumentData) })) as MeshEvent[];
-      setFeed(rows);
-    });
+    const unsubFeed = onSnapshot(
+  q,
+  (snap) => {
+    setFeed(snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })));
+  },
+  (err) => {
+    setRuntimeErr(String(err?.message || err));
+  }
+);
 
     return () => {
       unsubAuth();
@@ -98,7 +103,8 @@ const [runtimeErr, setRuntimeErr] = useState<string | null>(null);
   }, []);
 
   const pushToMesh = async (type: string, text: string, tags: string[] = []) => {
-    const evt: Omit<MeshEvent, 'id'> = {
+  try {
+    const evt = {
       type,
       text,
       tags,
@@ -107,9 +113,16 @@ const [runtimeErr, setRuntimeErr] = useState<string | null>(null);
       ver: 'v1.0',
     };
 
-    setFeed((prev) => [{ id: Date.now(), ...evt, ts: { toDate: () => new Date() } } as MeshEvent, ...prev]);
+    setFeed((prev) => [
+      { id: Date.now(), ...evt, ts: { toDate: () => new Date() } },
+      ...prev,
+    ]);
+
     await addDoc(collection(db, `artifacts/${appId}/public/mesh_events`), evt);
-  };
+  } catch (err: any) {
+    setRuntimeErr(String(err?.message || err));
+  }
+};
 
   useEffect(() => {
     if (!botActive) return;
