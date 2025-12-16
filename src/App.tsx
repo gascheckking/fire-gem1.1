@@ -9,12 +9,7 @@ import {
   limit,
   onSnapshot,
   serverTimestamp,
-  type DocumentData,
 } from 'firebase/firestore';
-
-import {
-  Home,
-  ShoppingBag,
   Gift,
   MessageSquare,
   Settings,
