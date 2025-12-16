@@ -1,17 +1,14 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { initializeApp } from 'firebase/app';
-import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, serverTimestamp } from 'firebase/firestore';
-import { 
-  Home, ShoppingBag, Gift, Layers, MessageSquare, Settings, 
-  Zap, Activity, Users, Shield, Cpu, Terminal, 
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { auth, db, APP_ID } from './firebase';
+import {
+  Home, ShoppingBag, Gift, Layers, MessageSquare, Settings,
+  Zap, Activity, Users, Shield, Cpu, Terminal,
   ChevronRight, Play, Box, Globe, Wallet, Bell, Search,
   Trophy, Flame, Sparkles
 } from 'lucide-react';
 
 // --- CONFIG & CONSTANTS ---
-const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'spawn-os-v4';
+const appId = APP_ID;
 
 // Rarity Model (SpawnEngine v1 Economy)
 const RARITY = {
