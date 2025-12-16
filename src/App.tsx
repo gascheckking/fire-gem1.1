@@ -10,6 +10,10 @@ import {
   onSnapshot,
   serverTimestamp,
 } from 'firebase/firestore';
+
+import {
+  Home,
+  ShoppingBag,
   Gift,
   MessageSquare,
   Settings,
