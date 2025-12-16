@@ -1,5 +1,6 @@
 import { auth, db, APP_ID } from './firebase';
 import { useState, useEffect } from 'react';
+import { DocumentData } from 'firebase/firestore';
 import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 import {
   collection,
