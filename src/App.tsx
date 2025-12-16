@@ -469,6 +469,12 @@ const [runtimeErr, setRuntimeErr] = useState<string | null>(null);
 
   return (
     <div className="flex h-screen bg-[#050508] text-slate-200 font-sans">
+{runtimeErr && (
+  <div className="fixed top-3 left-3 right-3 z-[9999] bg-red-950/80 border border-red-500/40 text-red-200 text-xs p-3 rounded-xl backdrop-blur">
+    <div className="font-bold mb-1">Runtime error:</div>
+    <div className="break-words">{runtimeErr}</div>
+  </div>
+)}
       <Sidebar />
 
       <main className="flex-1 lg:ml-64 xl:mr-80 flex flex-col h-full relative z-10">
