@@ -67,11 +67,12 @@ export default function SpawnEngineOS() {
 const [runtimeErr, setRuntimeErr] = useState<string | null>(null);
 
   useEffect(() => {
+  try {
     const unsubAuth = onAuthStateChanged(auth, (u) => {
       if (u) {
         setWallet((prev) => ({
           ...prev,
-          address: u.uid.substring(0, 6) + '...' + u.uid.substring(u.uid.length - 4),
+          address: u.uid.substring(0, 6) + "..." + u.uid.substring(u.uid.length - 4),
         }));
       } else {
         signInAnonymously(auth);
@@ -80,20 +81,24 @@ const [runtimeErr, setRuntimeErr] = useState<string | null>(null);
 
     const q = query(
       collection(db, `artifacts/${appId}/public/mesh_events`),
-      orderBy('ts', 'desc'),
+      orderBy("ts", "desc"),
       limit(30)
     );
 
     const unsubFeed = onSnapshot(
-  q,
-  (snap) => {
-    setFeed(snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })));
-  },
-  (err) => {
+      q,
+      (snap) => setFeed(snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }))),
+      (err) => setRuntimeErr(String(err?.message || err))
+    );
+
+    return () => {
+      unsubAuth();
+      unsubFeed();
+    };
+  } catch (err: any) {
     setRuntimeErr(String(err?.message || err));
   }
-);
-
+}, []);
     return () => {
       unsubAuth();
       unsubFeed();
