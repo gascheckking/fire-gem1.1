@@ -45,19 +45,30 @@ useEffect(() => {
   const unsubAuth = onAuthStateChanged(auth, (u) => {
     if (u) {
       setUser(u);
-      setWallet(prev => ({
+      setWallet((prev) => ({
         ...prev,
-        address: u.uid.substring(0, 6) + '...' + u.uid.substring(u.uid.length - 4)
+        address: u.uid.substring(0, 6) + '...' + u.uid.substring(u.uid.length - 4),
       }));
     } else {
       signInAnonymously(auth);
     }
   });
 
+  const q = query(
+    collection(db, `artifacts/${appId}/public/mesh_events`),
+    orderBy('ts', 'desc'),
+    limit(30)
+  );
+
+  const unsubFeed = onSnapshot(q, (snap) => {
+    setFeed(snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })));
+  });
+
   return () => {
     unsubAuth();
+    unsubFeed();
   };
-}, []);
+}, [appId]);
     // Unified Activity Mesh Listener
     const q = query(collection(firestore, `artifacts/${appId}/public/mesh_events`), orderBy('ts', 'desc'), limit(30));
     const unsubFeed = onSnapshot(q, (snap) => {
