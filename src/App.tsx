@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { auth, db, APP_ID } from './firebase';
-import { signInAnonymously, onAuthStateChanged, type User } from 'firebase/auth';
+import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 import {
   collection,
   addDoc,
@@ -13,17 +13,26 @@ import {
 } from 'firebase/firestore';
 
 import {
-  Home, ShoppingBag, Gift, Layers, MessageSquare, Settings,
-  Zap, Activity, Users, Shield, Cpu, Terminal,
-  ChevronRight, Play, Box, Globe, Wallet, Bell, Search,
-  Trophy, Flame, Sparkles,
-  Bot, Diamond
+  Home,
+  ShoppingBag,
+  Gift,
+  MessageSquare,
+  Settings,
+  Activity,
+  Shield,
+  Terminal,
+  Box,
+  Globe,
+  Search,
+  Trophy,
+  Flame,
+  Bot,
+  Diamond,
+  Zap,
 } from 'lucide-react';
 
-// --- CONFIG & CONSTANTS ---
 const appId = APP_ID;
 
-// Rarity Model (SpawnEngine v1 Economy)
 const RARITY = {
   FRAGMENT: { id: 'fragment', label: 'Fragment', color: 'text-slate-400', border: 'border-slate-500', value: 0.1 },
   SHARD: { id: 'shard', label: 'Shard', color: 'text-cyan-400', border: 'border-cyan-500', value: 1.1 },
@@ -43,36 +52,24 @@ type MeshEvent = {
   ver?: string;
 };
 
-// --- APP COMPONENT ---
 export default function SpawnEngineOS() {
   const [activeTab, setActiveTab] = useState<string>('home');
-  const [user, setUser] = useState<User | null>(null);
   const [feed, setFeed] = useState<MeshEvent[]>([]);
-  const [wallet, setWallet] = useState<{
-    address: string | null;
-    xp: number;
-    spn: number;
-    streak: number;
-    inventory: any[];
-  }>({
-    address: null,
+  const [wallet, setWallet] = useState({
+    address: null as string | null,
     xp: 1575,
     spn: 497,
     streak: 5,
-    inventory: [],
+    inventory: [] as any[],
   });
 
-  const [botActive, setBotActive] = useState<boolean>(true);
-  const [modalOpen, setModalOpen] = useState<string | null>(null); // 'pack-reveal', 'create-listing', etc.
+  const [botActive, setBotActive] = useState(true);
+  const [modalOpen, setModalOpen] = useState<string | null>(null);
   const [packRevealItem, setPackRevealItem] = useState<any>(null);
 
-  // --- FIREBASE INIT ---
   useEffect(() => {
-    if (!auth || !db) return;
-
     const unsubAuth = onAuthStateChanged(auth, (u) => {
       if (u) {
-        setUser(u);
         setWallet((prev) => ({
           ...prev,
           address: u.uid.substring(0, 6) + '...' + u.uid.substring(u.uid.length - 4),
@@ -99,9 +96,7 @@ export default function SpawnEngineOS() {
     };
   }, []);
 
-  // --- MESH CORE LOGIC (Simulated Backend) ---
   const pushToMesh = async (type: string, text: string, tags: string[] = []) => {
-    if (!db) return;
     const evt: Omit<MeshEvent, 'id'> = {
       type,
       text,
@@ -111,13 +106,10 @@ export default function SpawnEngineOS() {
       ver: 'v1.0',
     };
 
-    // Optimistic UI update
     setFeed((prev) => [{ id: Date.now(), ...evt, ts: { toDate: () => new Date() } } as MeshEvent, ...prev]);
-
     await addDoc(collection(db, `artifacts/${appId}/public/mesh_events`), evt);
   };
 
-  // Mock "SpawnBot" Intelligence
   useEffect(() => {
     if (!botActive) return;
     const interval = setInterval(() => {
@@ -128,13 +120,12 @@ export default function SpawnEngineOS() {
           { type: 'mesh_sync', text: '🌐 Mesh: New contract factory deployed by @builder0x', tags: ['infra'] }
         ];
         const action = actions[Math.floor(Math.random() * actions.length)];
-        pushToMesh(action.type, action.text, action.tags);
+        void pushToMesh(action.type, action.text, action.tags);
       }
     }, 8000);
     return () => clearInterval(interval);
   }, [botActive, wallet.address]);
 
-  // Actions
   const handleOpenPack = () => {
     const roll = Math.random();
     let result = RARITY.FRAGMENT;
@@ -160,7 +151,6 @@ export default function SpawnEngineOS() {
     void pushToMesh('quest_complete', `Daily Ritual Check-in completed. Streak: ${wallet.streak + 1}`, ['streak', 'xp']);
   };
 
-  // --- RENDERERS ---
   const SidebarItem = ({ id, icon: Icon, label }: { id: string; icon: any; label: string }) => (
     <button
       onClick={() => setActiveTab(id)}
@@ -175,7 +165,6 @@ export default function SpawnEngineOS() {
     </button>
   );
 
-  // Sidebar (Desktop)
   const Sidebar = () => (
     <aside className="hidden lg:flex flex-col w-64 border-r border-slate-800 bg-[#0c0a14] fixed h-full z-20">
       <div className="p-6 border-b border-slate-800/50">
@@ -213,19 +202,6 @@ export default function SpawnEngineOS() {
     </aside>
   );
 
-  // Right Widgets (Desktop)
-  const QuestItem = ({ title, reward, progress }: { title: string; reward: string; progress: number }) => (
-    <div>
-      <div className="flex justify-between text-xs mb-1">
-        <span className="text-slate-200">{title}</span>
-        <span className="text-cyan-400 font-mono">{reward}</span>
-      </div>
-      <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-        <div className="h-full bg-gradient-to-r from-cyan-500 to-blue-500" style={{ width: `${progress}%` }} />
-      </div>
-    </div>
-  );
-
   const Widgets = () => (
     <aside className="hidden xl:flex flex-col w-80 border-l border-slate-800 bg-[#0c0a14] fixed right-0 h-full z-20 p-6 space-y-6">
       <div className="relative">
@@ -235,17 +211,6 @@ export default function SpawnEngineOS() {
           placeholder="Search tokens, packs..."
           className="w-full bg-slate-900 border border-slate-800 rounded-full py-2 pl-10 pr-4 text-sm text-slate-300 focus:outline-none focus:border-cyan-500/50 transition-colors"
         />
-      </div>
-
-      <div className="bg-slate-900/50 rounded-xl border border-slate-800 p-4">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Quests</h3>
-          <span className="text-xs text-cyan-400 hover:underline cursor-pointer">View All</span>
-        </div>
-        <div className="space-y-3">
-          <QuestItem title="Mint 'Base Alpha'" reward="250 XP" progress={60} />
-          <QuestItem title="Deploy Token v2" reward="1000 XP" progress={0} />
-        </div>
       </div>
 
       <div className="bg-slate-900/50 rounded-xl border border-slate-800 p-4 relative overflow-hidden">
@@ -271,7 +236,7 @@ export default function SpawnEngineOS() {
 
       <div className="flex-1 overflow-hidden flex flex-col">
         <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Live Mesh Feed</h3>
-        <div className="flex-1 overflow-y-auto space-y-3 pr-2 scrollbar-hide">
+        <div className="flex-1 overflow-y-auto space-y-3 pr-2">
           {feed.slice(0, 10).map((evt) => (
             <div key={evt.id} className="text-xs border-l-2 border-slate-800 pl-3 py-1">
               <p className="text-slate-300 font-medium truncate">{evt.text}</p>
@@ -286,33 +251,6 @@ export default function SpawnEngineOS() {
     </aside>
   );
 
-  // --- VIEWS ---
-  const StatCard = ({ label, value, unit, glow }: { label: string; value: string; unit: string; glow?: 'cyan' | 'purple' }) => (
-    <div className={`bg-slate-900/80 border border-slate-800 p-4 rounded-xl ${glow ? `shadow-[0_0_15px_rgba(255,255,255,0.06)]` : ''}`}>
-      <div className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">{label}</div>
-      <div className={`text-2xl font-black ${glow === 'cyan' ? 'text-cyan-400' : glow === 'purple' ? 'text-purple-400' : 'text-white'}`}>
-        {value} <span className="text-xs font-normal text-slate-500">{unit}</span>
-      </div>
-    </div>
-  );
-
-  const ListingCard = ({ title, price, type, desc, icon: Icon, color }: { title: string; price: string; type: string; desc: string; icon: any; color: string }) => (
-    <div className="bg-slate-900/80 border border-slate-800 p-4 rounded-xl hover:border-slate-600 transition-colors cursor-pointer group">
-      <div className="flex justify-between items-start mb-3">
-        <div className={`p-2 rounded-lg bg-slate-800 ${color}`}>
-          <Icon size={20} />
-        </div>
-        <span className="text-[10px] font-bold bg-slate-800 text-slate-400 px-2 py-1 rounded">{type}</span>
-      </div>
-      <h4 className="font-bold text-white mb-1 group-hover:text-cyan-400 transition-colors">{title}</h4>
-      <p className="text-xs text-slate-500 mb-4">{desc}</p>
-      <div className="flex justify-between items-center pt-3 border-t border-slate-800">
-        <span className="font-mono text-white text-sm">{price}</span>
-        <button className="text-xs bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded-lg font-bold transition-colors">VIEW</button>
-      </div>
-    </div>
-  );
-
   const getIconForType = (type: string) => {
     switch (type) {
       case 'pack_open': return <Box size={16} />;
@@ -324,12 +262,28 @@ export default function SpawnEngineOS() {
   };
 
   const HomeView = () => (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="XP Balance" value={wallet.xp.toLocaleString()} unit="XP" glow="cyan" />
-        <StatCard label="Spawn Token" value={wallet.spn.toLocaleString()} unit="SPN" glow="purple" />
-        <StatCard label="Mesh Load" value="High" unit="98%" />
-        <StatCard label="Gas (Base)" value="0.01" unit="gwei" />
+        <div className="bg-slate-900/80 border border-slate-800 p-4 rounded-xl">
+          <div className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">XP Balance</div>
+          <div className="text-2xl font-black text-cyan-400">
+            {wallet.xp.toLocaleString()} <span className="text-xs font-normal text-slate-500">XP</span>
+          </div>
+        </div>
+        <div className="bg-slate-900/80 border border-slate-800 p-4 rounded-xl">
+          <div className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Spawn Token</div>
+          <div className="text-2xl font-black text-purple-400">
+            {wallet.spn.toLocaleString()} <span className="text-xs font-normal text-slate-500">SPN</span>
+          </div>
+        </div>
+        <div className="bg-slate-900/80 border border-slate-800 p-4 rounded-xl">
+          <div className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Mesh Load</div>
+          <div className="text-2xl font-black text-white">High <span className="text-xs font-normal text-slate-500">98%</span></div>
+        </div>
+        <div className="bg-slate-900/80 border border-slate-800 p-4 rounded-xl">
+          <div className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Gas (Base)</div>
+          <div className="text-2xl font-black text-white">0.01 <span className="text-xs font-normal text-slate-500">gwei</span></div>
+        </div>
       </div>
 
       <div className="bg-gradient-to-r from-slate-900 to-[#1e1b2e] border border-slate-800 rounded-2xl p-6 relative overflow-hidden group">
@@ -387,7 +341,7 @@ export default function SpawnEngineOS() {
   );
 
   const MarketView = () => (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-white">Marketplace</h2>
         <div className="flex gap-2">
@@ -397,48 +351,62 @@ export default function SpawnEngineOS() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <ListingCard
-          title="Genesis Token Pack"
-          price="0.05 ETH"
-          type="Pack"
-          desc="Contains 5 random tokens. Chance for Mythic."
-          icon={Box}
-          color="text-purple-400"
-        />
-        <ListingCard
-          title="Smart Contract Audit"
-          price="0.5 ETH"
-          type="Service"
-          desc="Full security review by Spawn Verified devs."
-          icon={Shield}
-          color="text-emerald-400"
-        />
-        <ListingCard
-          title="XP Booster (7 Days)"
-          price="1000 SPN"
-          type="Utility"
-          desc="2x XP multiplier for all actions."
-          icon={Zap}
-          color="text-yellow-400"
-        />
+        <div className="bg-slate-900/80 border border-slate-800 p-4 rounded-xl">
+          <div className="flex justify-between items-start mb-3">
+            <div className="p-2 rounded-lg bg-slate-800 text-purple-400"><Box size={20} /></div>
+            <span className="text-[10px] font-bold bg-slate-800 text-slate-400 px-2 py-1 rounded">Pack</span>
+          </div>
+          <h4 className="font-bold text-white mb-1">Genesis Token Pack</h4>
+          <p className="text-xs text-slate-500 mb-4">Contains 5 random tokens. Chance for Mythic.</p>
+          <div className="flex justify-between items-center pt-3 border-t border-slate-800">
+            <span className="font-mono text-white text-sm">0.05 ETH</span>
+            <button className="text-xs bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded-lg font-bold">VIEW</button>
+          </div>
+        </div>
+
+        <div className="bg-slate-900/80 border border-slate-800 p-4 rounded-xl">
+          <div className="flex justify-between items-start mb-3">
+            <div className="p-2 rounded-lg bg-slate-800 text-emerald-400"><Shield size={20} /></div>
+            <span className="text-[10px] font-bold bg-slate-800 text-slate-400 px-2 py-1 rounded">Service</span>
+          </div>
+          <h4 className="font-bold text-white mb-1">Smart Contract Audit</h4>
+          <p className="text-xs text-slate-500 mb-4">Full security review by Spawn Verified devs.</p>
+          <div className="flex justify-between items-center pt-3 border-t border-slate-800">
+            <span className="font-mono text-white text-sm">0.5 ETH</span>
+            <button className="text-xs bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded-lg font-bold">VIEW</button>
+          </div>
+        </div>
+
+        <div className="bg-slate-900/80 border border-slate-800 p-4 rounded-xl md:col-span-2">
+          <div className="flex justify-between items-start mb-3">
+            <div className="p-2 rounded-lg bg-slate-800 text-yellow-400"><Zap size={20} /></div>
+            <span className="text-[10px] font-bold bg-slate-800 text-slate-400 px-2 py-1 rounded">Utility</span>
+          </div>
+          <h4 className="font-bold text-white mb-1">XP Booster (7 Days)</h4>
+          <p className="text-xs text-slate-500 mb-4">2x XP multiplier for all actions.</p>
+          <div className="flex justify-between items-center pt-3 border-t border-slate-800">
+            <span className="font-mono text-white text-sm">1000 SPN</span>
+            <button className="text-xs bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded-lg font-bold">VIEW</button>
+          </div>
+        </div>
       </div>
     </div>
   );
 
   const ForgeView = () => (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
       <div className="bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700 p-8 rounded-2xl text-center">
         <Terminal className="w-12 h-12 text-pink-500 mx-auto mb-4" />
         <h2 className="text-2xl font-bold text-white mb-2">Creator Forge (No-Code)</h2>
         <p className="text-slate-400 max-w-md mx-auto mb-6">Deploy contracts, tokens, and pack series directly to the mesh without writing code.</p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
-          <button className="p-4 bg-slate-800 rounded-xl border border-slate-700 hover:border-pink-500 group transition-all">
-            <div className="font-bold text-white mb-1 group-hover:text-pink-400">Deploy Token</div>
+          <button className="p-4 bg-slate-800 rounded-xl border border-slate-700 hover:border-pink-500 transition-all">
+            <div className="font-bold text-white mb-1">Deploy Token</div>
             <div className="text-xs text-slate-500">ERC-20 Standard</div>
           </button>
-          <button className="p-4 bg-slate-800 rounded-xl border border-slate-700 hover:border-cyan-500 group transition-all">
-            <div className="font-bold text-white mb-1 group-hover:text-cyan-400">Deploy Pack Series</div>
+          <button className="p-4 bg-slate-800 rounded-xl border border-slate-700 hover:border-cyan-500 transition-all">
+            <div className="font-bold text-white mb-1">Deploy Pack Series</div>
             <div className="text-xs text-slate-500">Lootbox Logic</div>
           </button>
         </div>
@@ -452,36 +420,20 @@ export default function SpawnEngineOS() {
   );
 
   const SupCastView = () => (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-white">SupCast <span className="text-slate-500 text-lg">Support Mesh</span></h2>
         <button className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-sm font-bold border border-slate-700">New Ticket</button>
       </div>
-
-      <div className="space-y-3">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-slate-900/80 border border-slate-800 p-4 rounded-xl flex items-center gap-4 hover:border-slate-600 cursor-pointer transition-colors">
-            <div className="flex flex-col items-center justify-center w-12 h-12 bg-slate-800 rounded-lg text-green-400 border border-slate-700">
-              <span className="text-xs font-bold">XP</span>
-              <span className="font-black text-sm">500</span>
-            </div>
-            <div className="flex-1">
-              <h4 className="font-bold text-slate-200">Help implementing Pack Reveal API?</h4>
-              <p className="text-xs text-slate-500 mt-1">Posted by @dev_chad • 2h ago</p>
-            </div>
-            <div className="px-3 py-1 bg-blue-900/30 text-blue-400 text-xs font-bold rounded-full border border-blue-500/30">OPEN</div>
-          </div>
-        ))}
-      </div>
+      <div className="text-center py-20 text-slate-500">SupCast Loading...</div>
     </div>
   );
 
-  // --- MODAL RENDERER ---
   const Modal = () => {
     if (!modalOpen) return null;
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-        <div className="bg-[#0f111a] w-full max-w-md rounded-2xl border border-slate-700 shadow-2xl overflow-hidden transform transition-all">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div className="bg-[#0f111a] w-full max-w-md rounded-2xl border border-slate-700 shadow-2xl overflow-hidden">
           {modalOpen === 'pack-reveal' && packRevealItem && (
             <div className="text-center p-8">
               <div className={`mx-auto w-24 h-24 flex items-center justify-center rounded-full border-4 mb-6 ${packRevealItem.border} bg-slate-900 shadow-[0_0_30px_rgba(255,255,255,0.1)]`}>
@@ -491,23 +443,8 @@ export default function SpawnEngineOS() {
               <p className="text-slate-400 mb-6">
                 Estimated Value: <span className="text-white font-mono">{packRevealItem.value}x</span>
               </p>
-              <button
-                onClick={() => setModalOpen(null)}
-                className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-colors"
-              >
+              <button onClick={() => setModalOpen(null)} className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold">
                 Collect & Close
-              </button>
-            </div>
-          )}
-
-          {modalOpen === 'pack-reveal' && !packRevealItem && (
-            <div className="text-center p-8">
-              <div className="text-slate-400">No reveal data.</div>
-              <button
-                onClick={() => setModalOpen(null)}
-                className="mt-6 w-full py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-colors"
-              >
-                Close
               </button>
             </div>
           )}
@@ -516,9 +453,8 @@ export default function SpawnEngineOS() {
     );
   };
 
-  // --- MAIN LAYOUT ---
   return (
-    <div className="flex h-screen bg-[#050508] text-slate-200 font-sans selection:bg-cyan-500/30">
+    <div className="flex h-screen bg-[#050508] text-slate-200 font-sans">
       <Sidebar />
 
       <main className="flex-1 lg:ml-64 xl:mr-80 flex flex-col h-full relative z-10">
@@ -534,13 +470,11 @@ export default function SpawnEngineOS() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-white">Packs & Loot</h2>
-                <button
-                  onClick={handleOpenPack}
-                  className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-sm font-bold"
-                >
+                <button onClick={handleOpenPack} className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-sm font-bold">
                   Open Pack
                 </button>
               </div>
+
               <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
                 <div className="text-sm text-slate-400 mb-4">Inventory</div>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -557,12 +491,9 @@ export default function SpawnEngineOS() {
           )}
           {activeTab === 'forge' && <ForgeView />}
           {activeTab === 'supcast' && <SupCastView />}
-          {activeTab === 'leaderboard' && <div className="text-center py-20 text-slate-500">Leaderboard Loading...</div>}
-          {activeTab === 'mesh' && <div className="text-center py-20 text-slate-500">Mesh Explorer Loading...</div>}
-          {activeTab === 'spawnbot' && <div className="text-center py-20 text-slate-500">SpawnBot Panel Loading...</div>}
         </div>
 
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#0c0a14]/95 backdrop-blur border-t border-slate-800 flex justify-around p-2 z-40 pb-safe">
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#0c0a14]/95 backdrop-blur border-t border-slate-800 flex justify-around p-2 z-40">
           <button onClick={() => setActiveTab('home')} className={`p-2 rounded-lg flex flex-col items-center ${activeTab === 'home' ? 'text-cyan-400' : 'text-slate-500'}`}>
             <Home size={20} /><span className="text-[10px] font-bold mt-1">Home</span>
           </button>
@@ -580,16 +511,6 @@ export default function SpawnEngineOS() {
 
       <Widgets />
       <Modal />
-
-      {/* Global Styles for Animations/Scrollbars */}
-      <style>{`
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #334155; }
-        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-      `}</style>
     </div>
   );
 }
