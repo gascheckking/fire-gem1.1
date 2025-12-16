@@ -66,6 +66,7 @@ export default function SpawnEngineOS() {
   const [botActive, setBotActive] = useState(true);
   const [modalOpen, setModalOpen] = useState<string | null>(null);
   const [packRevealItem, setPackRevealItem] = useState<any>(null);
+const [runtimeErr, setRuntimeErr] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubAuth = onAuthStateChanged(auth, (u) => {
