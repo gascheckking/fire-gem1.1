@@ -4,6 +4,7 @@ import App from './App';
 import './index.css';
 
 function renderFatal(err: unknown) {
+console.error("FATAL:", err);
   const rootEl = document.getElementById('root');
   if (!rootEl) return;
   rootEl.innerHTML = `
