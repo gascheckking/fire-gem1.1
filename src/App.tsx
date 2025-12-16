@@ -27,6 +27,7 @@ import {
   Flame,
   Bot,
   Diamond,
+  Zap,
 } from 'lucide-react';
 const appId = APP_ID;
 
