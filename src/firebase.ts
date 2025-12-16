@@ -1,33 +1,19 @@
-import { initializeApp, type FirebaseApp } from 'firebase/app';
-import { getAuth, type Auth } from 'firebase/auth';
-import { getFirestore, type Firestore } from 'firebase/firestore';
+import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY as string | undefined,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN as string | undefined,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID as string | undefined,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET as string | undefined,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID as string | undefined,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID as string | undefined,
+  apiKey: "AIzaSyDoErpJzQnkaEtt8Gxy59emPlJBFft5O08",
+  authDomain: "firegem-b6f22.firebaseapp.com",
+  projectId: "firegem-b6f22",
+  storageBucket: "firegem-b6f22.firebasestorage.app",
+  messagingSenderId: "461582898924",
+  appId: "1:461582898924:web:166ec1e5aec048d17db7c9",
 };
 
-export const APP_ID = (import.meta.env.VITE_FIREBASE_APP_ID as string | undefined) || 'spawn-os-v4';
+export const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const db = getFirestore(app);
 
-export const firebaseReady = Boolean(
-  firebaseConfig.apiKey &&
-  firebaseConfig.authDomain &&
-  firebaseConfig.projectId &&
-  firebaseConfig.storageBucket &&
-  firebaseConfig.messagingSenderId &&
-  firebaseConfig.appId
-);
-
-export let app: FirebaseApp | null = null;
-export let auth: Auth | null = null;
-export let db: Firestore | null = null;
-
-if (firebaseReady) {
-  app = initializeApp(firebaseConfig as Required<typeof firebaseConfig>);
-  auth = getAuth(app);
-  db = getFirestore(app);
-}
+// används i App.tsx
+export const APP_ID = firebaseConfig.projectId;
