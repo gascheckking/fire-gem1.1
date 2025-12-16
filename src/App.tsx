@@ -1,12 +1,22 @@
-import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';
-import { collection, addDoc, query, orderBy, limit, onSnapshot, serverTimestamp } from 'firebase/firestore';
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { auth, db, APP_ID } from './firebase';
+import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';
+import {
+  collection,
+  addDoc,
+  query,
+  orderBy,
+  limit,
+  onSnapshot,
+  serverTimestamp,
+} from 'firebase/firestore';
+
 import {
   Home, ShoppingBag, Gift, Layers, MessageSquare, Settings,
   Zap, Activity, Users, Shield, Cpu, Terminal,
   ChevronRight, Play, Box, Globe, Wallet, Bell, Search,
-  Trophy, Flame, Sparkles
+  Trophy, Flame, Sparkles,
+  Bot, Diamond
 } from 'lucide-react';
 
 // --- CONFIG & CONSTANTS ---
@@ -26,20 +36,72 @@ const RARITY = {
 export default function SpawnEngineOS() {
   // State
   const [activeTab, setActiveTab] = useState('home');
-  const [user, setUser] = useState(null);
-  const [db, setDb] = useState(null);
-  const [feed, setFeed] = useState([]);
-  const [wallet, setWallet] = useState({ 
-    address: null, 
-    xp: 1575, 
-    spn: 497, 
-    streak: 5, 
-    inventory: [] 
+  const [user, setUser] = useState<any>(null);
+  const [feed, setFeed] = useState<any[]>([]);
+  const [wallet, setWallet] = useState<{
+    address: string | null;
+    xp: number;
+    spn: number;
+    streak: number;
+    inventory: any[];
+  }>({
+    address: null,
+    xp: 1575,
+    spn: 497,
+    streak: 5,
+    inventory: [],
   });
-  const [botActive, setBotActive] = useState(true);
-  const [modalOpen, setModalOpen] = useState(null); // 'pack-reveal', 'create-listing', etc.
-  const [packRevealItem, setPackRevealItem] = useState(null);
 
+  const [botActive, setBotActive] = useState(true);
+  const [modalOpen, setModalOpen] = useState<string | null>(null); // 'pack-reveal', 'create-listing', etc.
+  const [packRevealItem, setPackRevealItem] = useState<any>(null);
+
+  // --- FIREBASE INIT ---
+  useEffect(() => {
+    if (!auth || !db) return;
+
+    const unsubAuth = onAuthStateChanged(auth, (u) => {
+      if (u) {
+        setUser(u);
+        setWallet((prev) => ({
+          ...prev,
+          address: u.uid.substring(0, 6) + '...' + u.uid.substring(u.uid.length - 4),
+        }));
+      } else {
+        signInAnonymously(auth);
+      }
+    });
+
+    const q = query(
+      collection(db, `artifacts/${appId}/public/mesh_events`),
+      orderBy('ts', 'desc'),
+      limit(30)
+    );
+
+    const unsubFeed = onSnapshot(q, (snap) => {
+      setFeed(snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })));
+    });
+
+    return () => {
+      unsubAuth();
+      unsubFeed();
+    };
+  }, [appId]);
+
+  // --- MESH CORE LOGIC (Simulated Backend) ---
+  const pushToMesh = async (type: string, text: string, tags: string[] = []) => {
+    if (!db) return;
+    const evt = {
+      type,
+      text,
+      tags,
+      actor: wallet.address || 'Anon',
+      ts: serverTimestamp(),
+      ver: 'v1.0',
+    };
+    setFeed((prev) => [{ id: Date.now(), ...evt, ts: { toDate: () => new Date() } }, ...prev]);
+    await addDoc(collection(db, `artifacts/${appId}/public/mesh_events`), evt);
+  };
 // --- FIREBASE INIT ---
 useEffect(() => {
   if (!auth || !db) return;
