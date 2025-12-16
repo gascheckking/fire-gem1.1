@@ -1,18 +1,33 @@
-import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
-
-export const APP_ID = import.meta.env.VITE_APP_ID ?? 'spawn-os-v4';
+import { initializeApp, type FirebaseApp } from 'firebase/app';
+import { getAuth, type Auth } from 'firebase/auth';
+import { getFirestore, type Firestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY as string | undefined,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN as string | undefined,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID as string | undefined,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET as string | undefined,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID as string | undefined,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID as string | undefined,
 };
 
-export const app: FirebaseApp = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+export const APP_ID = (import.meta.env.VITE_FIREBASE_APP_ID as string | undefined) || 'spawn-os-v4';
+
+export const firebaseReady = Boolean(
+  firebaseConfig.apiKey &&
+  firebaseConfig.authDomain &&
+  firebaseConfig.projectId &&
+  firebaseConfig.storageBucket &&
+  firebaseConfig.messagingSenderId &&
+  firebaseConfig.appId
+);
+
+export let app: FirebaseApp | null = null;
+export let auth: Auth | null = null;
+export let db: Firestore | null = null;
+
+if (firebaseReady) {
+  app = initializeApp(firebaseConfig as Required<typeof firebaseConfig>);
+  auth = getAuth(app);
+  db = getFirestore(app);
+}
