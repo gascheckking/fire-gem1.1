@@ -9,7 +9,7 @@ function renderFatal(err: unknown) {
   rootEl.innerHTML = `
     <div style="padding:16px;font-family:ui-monospace,Menlo,monospace;white-space:pre-wrap">
       <h2 style="margin:0 0 10px 0">Runtime error (visas istället för grå sida)</h2>
-      <div>${String((err as any)?.stack || err)}</div>
+<div>${String((err as any)?.stack || (err as any)?.message || err)}</div>
     </div>
   `;
 }
