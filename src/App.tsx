@@ -86,7 +86,7 @@ const [runtimeErr, setRuntimeErr] = useState<string | null>(null);
     });
 
     const q = query(
-      collection(db, `artifacts/${appId}/public/mesh_events`),
+collection(db, `mesh_events_${appId}`)
       orderBy("ts", "desc"),
       limit(30)
     );
