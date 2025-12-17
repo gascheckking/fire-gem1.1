@@ -10,8 +10,7 @@ const firebaseConfig = {
   projectId: "firegem-b6f22",
   storageBucket: "firegem-b6f22.firebasestorage.app",
   messagingSenderId: "461582898924",
-  appId: "1:461582898924:web:166ec1e5aec048d17db7c9",
-  measurementId: "G-EGG1QKQ5JD",
+  appId: "1:461582898924:web:74b28b3063xxxxxx",
 };
 
 // Viktigt: init bara en gång
